@@ -25,6 +25,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -104,6 +105,8 @@ public final class ViewfinderView extends View {
         innercornerlength = (int) ta.getDimension(R.styleable.ViewfinderView_inner_corner_length, 65);
         // 扫描框边角宽度
         innercornerwidth = (int) ta.getDimension(R.styleable.ViewfinderView_inner_corner_width, 15);
+        // 扫描框边角离扫描框距离
+        innercornerMargin = (int) ta.getDimension(R.styleable.ViewfinderView_inner_corner_margin, 5);
 
         // 扫描bitmap
         Drawable drawable = ta.getDrawable(R.styleable.ViewfinderView_inner_scan_bitmap);
@@ -215,6 +218,8 @@ public final class ViewfinderView extends View {
     private int innercornerlength;
     // 扫描框边角宽度
     private int innercornerwidth;
+    // 扫描框边角离扫描框距离
+    private int innercornerMargin;
 
     /**
      * 绘制取景框边框
@@ -235,27 +240,37 @@ public final class ViewfinderView extends View {
 
         int corWidth = innercornerwidth;
         int corLength = innercornerlength;
-
+        int corMargin = innercornerMargin;
+        int totalDistance = corWidth + corMargin;
         // 左上角
-        canvas.drawRect(frame.left, frame.top, frame.left + corWidth, frame.top
-                + corLength, paint);
-        canvas.drawRect(frame.left, frame.top, frame.left
-                + corLength, frame.top + corWidth, paint);
+        canvas.drawRoundRect(new RectF(frame.left - totalDistance, frame.top - totalDistance, frame.left - corMargin, frame.top
+                + corLength), corWidth / 2, corWidth / 2, paint);
+        canvas.drawRoundRect(new RectF(frame.left - totalDistance, frame.top - totalDistance, frame.left
+                + corLength, frame.top - corMargin), corWidth / 2, corWidth / 2, paint);
         // 右上角
-        canvas.drawRect(frame.right - corWidth, frame.top, frame.right,
-                frame.top + corLength, paint);
-        canvas.drawRect(frame.right - corLength, frame.top,
-                frame.right, frame.top + corWidth, paint);
+        canvas.drawRoundRect(new RectF(frame.right + corMargin, frame.top - totalDistance, frame.right + totalDistance,
+                frame.top + corLength), corWidth / 2, corWidth / 2, paint);
+        canvas.drawRoundRect(new RectF(frame.right - corLength, frame.top - totalDistance,
+                frame.right + totalDistance, frame.top - corMargin), corWidth / 2, corWidth / 2, paint);
         // 左下角
-        canvas.drawRect(frame.left, frame.bottom - corLength,
-                frame.left + corWidth, frame.bottom, paint);
-        canvas.drawRect(frame.left, frame.bottom - corWidth, frame.left
-                + corLength, frame.bottom, paint);
+        canvas.drawRoundRect(new RectF(frame.left - totalDistance, frame.bottom - corLength,
+                frame.left - corMargin, frame.bottom + totalDistance), corWidth / 2, corWidth / 2, paint);
+        canvas.drawRoundRect(new RectF(frame.left - totalDistance, frame.bottom + corMargin, frame.left
+                + corLength, frame.bottom + totalDistance), corWidth / 2, corWidth / 2, paint);
         // 右下角
-        canvas.drawRect(frame.right - corWidth, frame.bottom - corLength,
-                frame.right, frame.bottom, paint);
-        canvas.drawRect(frame.right - corLength, frame.bottom - corWidth,
-                frame.right, frame.bottom, paint);
+        canvas.drawRoundRect(new RectF(frame.right + corMargin, frame.bottom - corLength,
+                frame.right + totalDistance, frame.bottom + totalDistance), corWidth / 2, corWidth / 2, paint);
+        canvas.drawRoundRect(new RectF(frame.right - corLength, frame.bottom + corMargin,
+                frame.right + totalDistance, frame.bottom + totalDistance), corWidth / 2, corWidth / 2, paint);
+        //关闭硬件加速
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        paint.setStrokeWidth(0.5f);
+        paint.setShadowLayer(5f, 0, 0, innercornercolor);
+        canvas.drawLine(frame.left, frame.top, frame.left, frame.bottom, paint);
+        canvas.drawLine(frame.left, frame.top, frame.right, frame.top, paint);
+        canvas.drawLine(frame.right, frame.top, frame.right, frame.bottom, paint);
+        canvas.drawLine(frame.right, frame.bottom, frame.left, frame.bottom, paint);
+        paint.reset();
     }
 
 
